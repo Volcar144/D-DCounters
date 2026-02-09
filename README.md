@@ -83,6 +83,25 @@ npm run dev:ws
 
 The WebSocket server will run on port 3001 by default.
 
+### WebSocket Integration
+
+The application includes a WebSocket system for real-time multiplayer support:
+
+- **Client Hook**: Uses `useWebSocket` hook to connect to the WebSocket server
+- **Automatic Connection**: Connects when an encounter is active
+- **Connection Status**: Visual indicator shows online/offline status in the header
+- **Event Broadcasting**: Syncs encounter updates, participant changes, and combat actions
+- **Room-based**: Each encounter has its own room for isolated multiplayer sessions
+
+To enable multiplayer features, run both the Next.js dev server and WebSocket server:
+```bash
+# Terminal 1
+npm run dev
+
+# Terminal 2  
+npm run dev:ws
+```
+
 ## Usage Guide
 
 ### Creating an Encounter

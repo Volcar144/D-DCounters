@@ -29,21 +29,32 @@ function SortableParticipant({ participant, onRemove }: {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-gray-700 p-4 rounded flex items-center justify-between cursor-move"
+      className="participant-card p-4 rounded-lg flex items-center justify-between cursor-move mb-3 hover:shadow-xl"
       {...attributes}
       {...listeners}
     >
-      <div className="flex-1">
-        <div className="font-bold">{participant.name}</div>
-        <div className="text-sm text-gray-400">
-          {participant.type} | HP: {participant.hp}/{participant.maxHp} | AC: {participant.ac} | Init: +{participant.initiative}
+      <div className="flex items-center gap-4 flex-1">
+        <div className="text-3xl">
+          {participant.type === 'monster' ? '🐉' : participant.type === 'character' ? '⚔️' : '🧙'}
+        </div>
+        <div className="flex-1">
+          <div className="font-bold text-lg text-white">{participant.name}</div>
+          <div className="text-sm text-gray-400 flex gap-4 mt-1">
+            <span className="capitalize">{participant.type}</span>
+            <span>❤️ {participant.hp}/{participant.maxHp}</span>
+            <span>🛡️ {participant.ac}</span>
+            <span>⚡ +{participant.initiative}</span>
+          </div>
         </div>
       </div>
       <button
-        onClick={() => onRemove(participant.id)}
-        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove(participant.id)
+        }}
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium"
       >
-        Remove
+        ✕ Remove
       </button>
     </div>
   )
@@ -146,144 +157,169 @@ export default function EncounterBuilder() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex gap-4 items-end">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-2">Encounter Name</label>
-          <input
-            type="text"
-            value={encounterName}
-            onChange={(e) => setEncounterName(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-700 rounded text-white"
-          />
-        </div>
-        <button
-          onClick={startEncounter}
-          disabled={participants.length === 0}
-          className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
-        >
-          Start Encounter
-        </button>
-        <button
-          onClick={saveEncounter}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Save
-        </button>
-        <button
-          onClick={loadEncounters}
-          className="px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-        >
-          Load
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold">Add Participant</h3>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Name</label>
+    <div className="space-y-8">
+      {/* Header Actions */}
+      <div className="glass-card p-6 rounded-lg space-y-4">
+        <div className="flex gap-4 items-end flex-wrap">
+          <div className="flex-1 min-w-[300px]">
+            <label className="block text-sm font-semibold mb-2 text-gray-300">📝 Encounter Name</label>
             <input
               type="text"
-              value={newParticipant.name}
-              onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
-              className="w-full px-4 py-2 bg-gray-700 rounded text-white"
-              placeholder="Participant name"
+              value={encounterName}
+              onChange={(e) => setEncounterName(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+              placeholder="Enter encounter name..."
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Type</label>
-              <select
-                value={newParticipant.type}
-                onChange={(e) => setNewParticipant({ ...newParticipant, type: e.target.value as any })}
-                className="w-full px-4 py-2 bg-gray-700 rounded text-white"
-              >
-                <option value="character">Character</option>
-                <option value="monster">Monster</option>
-                <option value="npc">NPC</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">HP</label>
-              <input
-                type="number"
-                value={newParticipant.hp}
-                onChange={(e) => {
-                  const hp = parseInt(e.target.value)
-                  setNewParticipant({ ...newParticipant, hp, maxHp: hp })
-                }}
-                className="w-full px-4 py-2 bg-gray-700 rounded text-white"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">AC</label>
-              <input
-                type="number"
-                value={newParticipant.ac}
-                onChange={(e) => setNewParticipant({ ...newParticipant, ac: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 bg-gray-700 rounded text-white"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Initiative Mod</label>
-              <input
-                type="number"
-                value={newParticipant.initiative}
-                onChange={(e) => setNewParticipant({ ...newParticipant, initiative: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 bg-gray-700 rounded text-white"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={newParticipant.isPlayer}
-                onChange={(e) => setNewParticipant({ ...newParticipant, isPlayer: e.target.checked })}
-                className="w-4 h-4"
-              />
-              Player Character
-            </label>
-          </div>
-
           <button
-            onClick={addParticipant}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={startEncounter}
+            disabled={participants.length === 0}
+            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed transition-all font-semibold shadow-lg"
           >
-            Add to Encounter
+            ▶️ Start Encounter
+          </button>
+          <button
+            onClick={saveEncounter}
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-semibold shadow-lg"
+          >
+            💾 Save
+          </button>
+          <button
+            onClick={loadEncounters}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all font-semibold shadow-lg"
+          >
+            📂 Load
           </button>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold">Participants ({participants.length})</h3>
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Add Participant Form */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-3xl">➕</span>
+            <h3 className="text-2xl font-bold text-white">Add Participant</h3>
+          </div>
           
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={participants} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {participants.map((participant) => (
-                  <SortableParticipant
-                    key={participant.id}
-                    participant={participant}
-                    onRemove={removeParticipant}
-                  />
-                ))}
-                {participants.length === 0 && (
-                  <p className="text-gray-400 text-center py-8">
-                    No participants added yet. Add some to start building your encounter!
-                  </p>
-                )}
+          <div className="glass-card p-6 rounded-lg space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-300">Name</label>
+              <input
+                type="text"
+                value={newParticipant.name}
+                onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                placeholder="Enter participant name..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">Type</label>
+                <select
+                  value={newParticipant.type}
+                  onChange={(e) => setNewParticipant({ ...newParticipant, type: e.target.value as any })}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                >
+                  <option value="character">⚔️ Character</option>
+                  <option value="monster">🐉 Monster</option>
+                  <option value="npc">🧙 NPC</option>
+                </select>
               </div>
-            </SortableContext>
-          </DndContext>
+              
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">❤️ HP</label>
+                <input
+                  type="number"
+                  value={newParticipant.hp}
+                  onChange={(e) => {
+                    const hp = parseInt(e.target.value) || 10
+                    setNewParticipant({ ...newParticipant, hp, maxHp: hp })
+                  }}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                  min="1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">🛡️ AC</label>
+                <input
+                  type="number"
+                  value={newParticipant.ac}
+                  onChange={(e) => setNewParticipant({ ...newParticipant, ac: parseInt(e.target.value) || 10 })}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                  min="1"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">⚡ Initiative Mod</label>
+                <input
+                  type="number"
+                  value={newParticipant.initiative}
+                  onChange={(e) => setNewParticipant({ ...newParticipant, initiative: parseInt(e.target.value) || 0 })}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={newParticipant.isPlayer}
+                  onChange={(e) => setNewParticipant({ ...newParticipant, isPlayer: e.target.checked })}
+                  className="w-5 h-5 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-500 focus:ring-2"
+                />
+                <span className="text-white font-medium group-hover:text-red-400 transition-colors">Player Character</span>
+              </label>
+            </div>
+
+            <button
+              onClick={addParticipant}
+              className="w-full px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all font-bold text-lg shadow-lg"
+            >
+              ➕ Add to Encounter
+            </button>
+          </div>
+        </div>
+
+        {/* Participants List */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-3xl">👥</span>
+            <h3 className="text-2xl font-bold text-white">Participants ({participants.length})</h3>
+          </div>
+          
+          <div className="glass-card p-6 rounded-lg">
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={participants} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+                  {participants.map((participant) => (
+                    <SortableParticipant
+                      key={participant.id}
+                      participant={participant}
+                      onRemove={removeParticipant}
+                    />
+                  ))}
+                  {participants.length === 0 && (
+                    <div className="text-center py-16 px-4">
+                      <div className="text-6xl mb-4">🎲</div>
+                      <p className="text-gray-400 text-lg">
+                        No participants yet.
+                      </p>
+                      <p className="text-gray-500 text-sm mt-2">
+                        Add characters and monsters to build your encounter!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </div>
         </div>
       </div>
     </div>
