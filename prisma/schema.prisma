@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Monster {
+  id          String   @id @default(uuid())
+  name        String
+  type        String
+  cr          Float
+  hp          Int
+  ac          Int
+  speed       String
+  str         Int
+  dex         Int
+  con         Int
+  int         Int
+  wis         Int
+  cha         Int
+  abilities   String   // JSON string
+  actions     String   // JSON string
+  apiIndex    String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Character {
+  id          String   @id @default(uuid())
+  name        String
+  playerName  String?
+  class       String
+  level       Int
+  hp          Int
+  maxHp       Int
+  ac          Int
+  initiative  Int
+  str         Int
+  dex         Int
+  con         Int
+  int         Int
+  wis         Int
+  cha         Int
+  abilities   String   // JSON string
+  equipment   String   // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  encounters  EncounterParticipant[]
+}
+
+model Encounter {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  difficulty  String?
+  status      String   @default("preparing") // preparing, active, completed
+  round       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  participants EncounterParticipant[]
+  logs        CombatLog[]
+}
+
+model EncounterParticipant {
+  id          String   @id @default(uuid())
+  encounterId String
+  encounter   Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  
+  characterId String?
+  character   Character? @relation(fields: [characterId], references: [id])
+  
+  name        String
+  type        String   // character, monster, npc
+  hp          Int
+  maxHp       Int
+  ac          Int
+  initiative  Int
+  initiativeRoll Int?
+  
+  conditions  String   @default("[]") // JSON array
+  effects     String   @default("[]") // JSON array
+  
+  isDead      Boolean  @default(false)
+  isPlayer    Boolean  @default(false)
+  
+  monsterData String?  // JSON string for monster stats
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([encounterId])
+}
+
+model CombatLog {
+  id          String   @id @default(uuid())
+  encounterId String
+  encounter   Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  
+  round       Int
+  action      String   // attack, damage, heal, condition, effect, initiative, etc.
+  actor       String
+  target      String?
+  details     String   // JSON string
+  
+  timestamp   DateTime @default(now())
+  
+  @@index([encounterId])
+}
